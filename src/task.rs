@@ -1,4 +1,4 @@
-use std::process::Command;
+use std::process::{Command, Output};
 
 pub trait Task {
     fn execute(&self) -> TaskOutput;
@@ -12,42 +12,87 @@ pub enum TaskInput {
 
 #[derive(Debug)]
 pub enum TaskOutput {
-    StringOutput(String),
+    Success(String),
+    Failure(String),
 }
 
 pub struct CommandTask {
     id: TaskId,
     dependencies: Vec<TaskId>,
-    inputs: Vec<TaskInput>,
     command: String,
+    arguments: Vec<String>,
+    working_dir: Option<String>,
+    env: Vec<(String, String)>,
 }
 
 impl Task for CommandTask {
     fn execute(&self) -> TaskOutput {
-        let command_output = Command::new("sh")
-            .arg("-c")
-            .arg(&self.command)
-            .output()
-            .expect("Failed to execute command");
+        let mut cmd = Command::new(&self.command);
 
-        let stdout = String::from_utf8_lossy(&command_output.stdout).to_string();
+        // Add arguments
+        cmd.args(&self.arguments);
 
-        TaskOutput::StringOutput(stdout)
+        // Set working directory
+        if let Some(dir) = &self.working_dir {
+            cmd.current_dir(dir);
+        }
+
+        // Set environment variables
+        for (key, value) in &self.env {
+            cmd.env(key, value);
+        }
+
+        // Execute command
+        match cmd.output() {
+            Ok(Output {
+                stdout,
+                stderr,
+                status,
+            }) => {
+                if status.success() {
+                    TaskOutput::Success(String::from_utf8_lossy(&stdout).to_string())
+                } else {
+                    TaskOutput::Failure(format!(
+                        "Command failed with code {:?}: {}",
+                        status.code(),
+                        String::from_utf8_lossy(&stderr)
+                    ))
+                }
+            }
+            Err(e) => TaskOutput::Failure(format!("Failed to execute command: {}", e)),
+        }
     }
 }
 
 impl CommandTask {
-    pub fn new(
-        id: TaskId,
-        dependencies: Vec<TaskId>,
-        inputs: Vec<TaskInput>,
-        command: String,
-    ) -> Self {
+    pub fn new(id: String, command: String) -> Self {
         Self {
-            id,
-            dependencies,
-            inputs,
-            command,
+            id: TaskId(id),
+            dependencies: Vec::new(),
+            command: command,
+            arguments: Vec::new(),
+            working_dir: None,
+            env: Vec::new(),
         }
+    }
+
+    pub fn with_dependencies(mut self, dependencies: Vec<TaskId>) -> Self {
+        self.dependencies = dependencies;
+        self
+    }
+
+    pub fn with_arguments(mut self, arguments: Vec<String>) -> Self {
+        self.arguments = arguments;
+        self
+    }
+
+    pub fn with_working_dir(mut self, working_dir: String) -> Self {
+        self.working_dir = Some(working_dir);
+        self
+    }
+
+    pub fn with_env(mut self, env: Vec<(String, String)>) -> Self {
+        self.env = env;
+        self
     }
 }
