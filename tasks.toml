@@ -14,3 +14,12 @@ type = "request"
 dependencies = []
 
 url = "https://www.rust-lang.org"
+method = "GET"
+
+[[tasks]]
+id = "test-task-2"
+type = "request"
+dependencies = []
+
+url = "https://www.rust-lang.org"
+method = "POST"

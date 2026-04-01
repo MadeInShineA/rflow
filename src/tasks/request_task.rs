@@ -2,24 +2,36 @@ use std::process::{Command, Output};
 
 use serde::Deserialize;
 
-use crate::tasks::{
-    command_task::CommandTask,
-    task::{Task, TaskId, TaskOutput},
-};
+use crate::tasks::task::{Task, TaskId, TaskOutput};
+
+#[derive(Deserialize)]
+pub enum RequestMethod {
+    GET,
+    POST,
+}
 
 #[derive(Deserialize)]
 pub struct RequestTask {
     id: TaskId,
     dependencies: Vec<TaskId>,
+    method: RequestMethod,
     url: String,
 }
 
 impl Task for RequestTask {
     fn execute(&self) -> TaskOutput {
-        if let Ok(response) = reqwest::blocking::get(&self.url) {
-            return TaskOutput::Success(response.status().as_str().to_string());
-        }
+        let client = reqwest::blocking::Client::new();
+        let response_result = match self.method {
+            RequestMethod::GET => client.get(&self.url).send(),
+            RequestMethod::POST => client.post(&self.url).send(),
+        };
 
-        TaskOutput::Failure("Request failed".to_string())
+        match response_result {
+            Ok(response) => match response.text() {
+                Ok(body) => TaskOutput::Success(body),
+                Err(e) => TaskOutput::Failure(format!("Failed to read response: {}", e)),
+            },
+            Err(e) => TaskOutput::Failure(format!("Request failed: {}", e)),
+        }
     }
 }
