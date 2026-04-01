@@ -1,21 +1,10 @@
 use std::process::{Command, Output};
 
-pub trait Task {
-    fn execute(&self) -> TaskOutput;
-}
+use serde::Deserialize;
 
-pub struct TaskId(pub String);
+use crate::tasks::task::{Task, TaskId, TaskOutput};
 
-pub enum TaskInput {
-    StringInput(String),
-}
-
-#[derive(Debug)]
-pub enum TaskOutput {
-    Success(String),
-    Failure(String),
-}
-
+#[derive(Deserialize)]
 pub struct CommandTask {
     id: TaskId,
     dependencies: Vec<TaskId>,
@@ -61,38 +50,5 @@ impl Task for CommandTask {
             }
             Err(e) => TaskOutput::Failure(format!("Failed to execute command: {}", e)),
         }
-    }
-}
-
-impl CommandTask {
-    pub fn new(id: String, command: String) -> Self {
-        Self {
-            id: TaskId(id),
-            dependencies: Vec::new(),
-            command: command,
-            arguments: Vec::new(),
-            working_dir: None,
-            env: Vec::new(),
-        }
-    }
-
-    pub fn with_dependencies(mut self, dependencies: Vec<TaskId>) -> Self {
-        self.dependencies = dependencies;
-        self
-    }
-
-    pub fn with_arguments(mut self, arguments: Vec<String>) -> Self {
-        self.arguments = arguments;
-        self
-    }
-
-    pub fn with_working_dir(mut self, working_dir: String) -> Self {
-        self.working_dir = Some(working_dir);
-        self
-    }
-
-    pub fn with_env(mut self, env: Vec<(String, String)>) -> Self {
-        self.env = env;
-        self
     }
 }

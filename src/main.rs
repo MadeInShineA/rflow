@@ -1,13 +1,12 @@
-use crate::task::{CommandTask, Task, TaskId};
+use tasks::task_parser::parse_tasks;
 
-mod task;
-mod task_parser;
+mod tasks;
 
 fn main() {
-    let hello_world = CommandTask::new(String::from("hello-world"), String::from("ls"))
-        .with_working_dir(String::from("./src"));
+    let tasks = parse_tasks("tasks.toml");
 
-    let outputs = hello_world.execute();
-
-    dbg!(outputs);
+    for task in tasks {
+        let output = task.as_task().execute();
+        dbg!(output);
+    }
 }

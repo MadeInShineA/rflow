@@ -1,0 +1,16 @@
+[[tasks]]
+id = "test-task"
+type = "command"
+dependencies = []
+
+env = []
+command = "ls"
+arguments = []
+working_dir = "./target"
+
+[[tasks]]
+id = "test-task-2"
+type = "request"
+dependencies = []
+
+url = "https://www.rust-lang.org"
