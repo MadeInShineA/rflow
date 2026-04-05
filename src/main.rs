@@ -8,13 +8,9 @@ mod tasks;
 async fn main() {
     let task_configs = parse_tasks("tasks.toml");
 
-    let handles = run_tasks(task_configs);
-    for handle in handles {
-        match handle.await {
-            Ok(output) => {
-                dbg!(output);
-            }
-            Err(e) => eprintln!("Task failed or was cancelled: {:?}", e),
-        }
+    let outputs = run_tasks(task_configs).await;
+
+    for output in outputs {
+        dbg!(output);
     }
 }
