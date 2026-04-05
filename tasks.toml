@@ -1,25 +1,18 @@
 [[tasks]]
-id = "test-task"
-type = "command"
+id = "test-task-1"
 dependencies = []
 
 env = []
 command = "ls"
-arguments = []
+arguments = ["-1"]
 working_dir = "./target"
 
-[[tasks]]
-id = "test-task-2"
-type = "request"
-dependencies = []
-
-url = "https://www.rust-lang.org"
-method = "GET"
 
 [[tasks]]
-id = "test-task-2"
-type = "request"
+id = "test-task-3"
 dependencies = []
 
-url = "https://www.rust-lang.org"
-method = "POST"
+env = []
+command = "sleep"
+arguments = ["5"]
+working_dir = "./"

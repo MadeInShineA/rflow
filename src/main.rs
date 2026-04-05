@@ -6,11 +6,7 @@ mod tasks;
 
 #[tokio::main]
 async fn main() {
-    let task_configs = parse_tasks("tasks.toml");
+    let tasks = parse_tasks("tasks.toml");
 
-    let outputs = run_tasks(task_configs).await;
-
-    for output in outputs {
-        dbg!(output);
-    }
+    let _ = run_tasks(tasks).await;
 }

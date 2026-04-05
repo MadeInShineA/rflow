@@ -1,22 +1,19 @@
-use crate::tasks::{task::TaskOutput, task_config::TaskConfig};
+use crate::tasks::task::Task;
 use tokio::task::JoinSet;
 
-pub async fn run_tasks(task_configs: Vec<TaskConfig>) -> Vec<TaskOutput> {
+pub async fn run_tasks(tasks: Vec<Task>) {
     let mut set = JoinSet::new();
 
-    for task_config in task_configs {
-        let task = task_config.as_task();
+    for task in tasks {
         set.spawn(async move { task.execute().await });
     }
 
-    let mut outputs = Vec::with_capacity(set.len());
-
     while let Some(result) = set.join_next().await {
         match result {
-            Ok(output) => outputs.push(output),
+            Ok(output) => {
+                println!("Got some output: {output:?}");
+            }
             Err(e) => eprintln!("Task failed: {e}"),
         }
     }
-
-    outputs
 }
