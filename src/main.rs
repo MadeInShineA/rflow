@@ -1,12 +1,20 @@
 use tasks::task_parser::parse_tasks;
+use tasks::task_runner::run_tasks;
+use tokio::time::{Duration, sleep};
 
 mod tasks;
 
-fn main() {
-    let tasks = parse_tasks("tasks.toml");
+#[tokio::main]
+async fn main() {
+    let task_configs = parse_tasks("tasks.toml");
 
-    for task in tasks {
-        let output = task.as_task().execute();
-        dbg!(output);
+    let handles = run_tasks(task_configs);
+    for handle in handles {
+        match handle.await {
+            Ok(_) => {}
+            Err(e) => eprintln!("Task failed or was cancelled: {:?}", e),
+        }
     }
+
+    sleep(Duration::from_millis(2000)).await;
 }

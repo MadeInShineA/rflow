@@ -1,6 +1,8 @@
-use std::process::{Command, Output};
+use std::process::Output;
 
+use async_trait::async_trait;
 use serde::Deserialize;
+use tokio::process::Command;
 
 use crate::tasks::task::{Task, TaskId, TaskOutput};
 
@@ -14,8 +16,9 @@ pub struct CommandTask {
     env: Vec<(String, String)>,
 }
 
+#[async_trait]
 impl Task for CommandTask {
-    fn execute(&self) -> TaskOutput {
+    async fn execute(&self) -> TaskOutput {
         let mut cmd = Command::new(&self.command);
 
         // Add arguments
@@ -32,7 +35,7 @@ impl Task for CommandTask {
         }
 
         // Execute command
-        match cmd.output() {
+        match cmd.output().await {
             Ok(Output {
                 stdout,
                 stderr,

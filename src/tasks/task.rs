@@ -1,7 +1,9 @@
+use async_trait::async_trait;
 use serde::Deserialize;
 
+#[async_trait]
 pub trait Task {
-    fn execute(&self) -> TaskOutput;
+    async fn execute(&self) -> TaskOutput;
 }
 
 #[derive(Deserialize)]

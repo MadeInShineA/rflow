@@ -15,10 +15,10 @@ pub enum TaskConfig {
 }
 
 impl TaskConfig {
-    pub fn as_task(&self) -> &dyn Task {
+    pub fn as_task(self) -> Box<dyn Task + Send> {
         match self {
-            TaskConfig::Command(t) => t,
-            TaskConfig::Request(t) => t,
+            TaskConfig::Command(t) => Box::new(t),
+            TaskConfig::Request(t) => Box::new(t),
         }
     }
 }
