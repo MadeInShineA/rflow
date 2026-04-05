@@ -11,10 +11,10 @@ async fn main() {
     let handles = run_tasks(task_configs);
     for handle in handles {
         match handle.await {
-            Ok(_) => {}
+            Ok(output) => {
+                dbg!(output);
+            }
             Err(e) => eprintln!("Task failed or was cancelled: {:?}", e),
         }
     }
-
-    sleep(Duration::from_millis(2000)).await;
 }

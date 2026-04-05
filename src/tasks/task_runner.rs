@@ -1,15 +1,13 @@
 use tokio::task::JoinHandle;
 
-use crate::tasks::task_config::TaskConfig;
+use crate::tasks::{task::TaskOutput, task_config::TaskConfig};
 
-pub fn run_tasks(task_configs: Vec<TaskConfig>) -> Vec<JoinHandle<()>> {
+pub fn run_tasks(task_configs: Vec<TaskConfig>) -> Vec<JoinHandle<TaskOutput>> {
     let mut res = Vec::new();
     for task_config in task_configs {
         let task = task_config.as_task();
 
-        let handle = tokio::spawn(async move {
-            task.execute().await;
-        });
+        let handle = tokio::spawn(async move { task.execute().await });
 
         res.push(handle);
     }
