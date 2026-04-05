@@ -1,5 +1,6 @@
 use std::process::{Command, Output};
 
+use reqwest::StatusCode;
 use serde::Deserialize;
 
 use crate::tasks::task::{Task, TaskId, TaskOutput};
@@ -27,10 +28,19 @@ impl Task for RequestTask {
         };
 
         match response_result {
-            Ok(response) => match response.text() {
-                Ok(body) => TaskOutput::Success(body),
-                Err(e) => TaskOutput::Failure(format!("Failed to read response: {}", e)),
-            },
+            Ok(response) => {
+                if response.status().is_success() {
+                    match response.text() {
+                        Ok(content) => TaskOutput::Success(content),
+                        Err(e) => TaskOutput::Failure(format!("Failed to read response: {}", e)),
+                    }
+                } else {
+                    TaskOutput::Failure(format!(
+                        "Got an unexpected response status code: {}",
+                        response.status()
+                    ))
+                }
+            }
             Err(e) => TaskOutput::Failure(format!("Request failed: {}", e)),
         }
     }
